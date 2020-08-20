@@ -1,4 +1,4 @@
-"""
+""" Defines the Series class used to analyze batches of games.
 """
 
 import functools
@@ -10,13 +10,19 @@ import attr
 import pandas as pd
 import plotnine
 
-from .cards import camelcase_card_dict
-from .game import Game
+from tta_analysis.cards import camelcase_card_dict
+from tta_analysis.game import Game
 
 
 @ab.graph
 @attr.s(auto_attribs=True, hash=False)
 class Series(object):
+    """ Combines the logs from many games and aggregates the results.
+
+    Can either be instantiated with a tuple of explicitly defined paths to the
+    game logs to be read or with a folder path, in which each .yaml file will
+    be used to create a game.
+    """
     game_files: Tuple[str, ...]
     base_dir: str = "./"
     player: str = "yellow"
@@ -29,10 +35,14 @@ class Series(object):
             f
             for f in os.listdir(base_dir)
             if os.path.isfile(os.path.join(base_dir, f))
-            if "yaml" in f
+            if os.path.splitext(f)[1] == ".yaml"
         )
 
         return cls(game_files=game_files, base_dir=base_dir, **kwargs)
+
+    ###########################################################################
+    # Load game logs and create games.
+    ###########################################################################
 
     @property
     @functools.lru_cache()
@@ -53,6 +63,23 @@ class Series(object):
             )
             for game_file in game_files
         }
+
+    @ab.auto_arcs()
+    def check_games(self, games: Dict[str, Game]) -> None:
+        """ Checks that each game can be loaded properly. This functionality
+        should be rewritten as error handling in tta_analyses.game.Game.
+
+        Attempts to parse the log for each game.
+        """
+        for game in games.values():
+            print(game.game_file)
+            game.record_json.get("final_score")
+
+        return None
+
+    ###########################################################################
+    # Aggregate data from games.
+    ###########################################################################
 
     @property
     @ab.auto_arcs()
