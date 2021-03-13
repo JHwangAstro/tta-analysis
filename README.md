@@ -1,2 +1,2 @@
 # TTA-analysis
-> Read TTA game logs and recreate game state for analyses.
+> Read TTA (Through the Ages) game logs and recreate game state for analyses.
